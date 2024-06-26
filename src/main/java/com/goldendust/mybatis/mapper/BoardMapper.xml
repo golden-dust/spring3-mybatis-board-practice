@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.goldendust.mybatis.dao.BoardDao">
+	<insert id="write">
+		INSERT INTO springboard (mid, bname, btitle, bcontent, bhit) VALUES (#{param1}, #{param2}, #{param3}, #{param4}, 0)
+	</insert>
+	
+	<select id="getList" resultType="com.goldendust.mybatis.dto.BoardDto">
+		SELECT * FROM springboard ORDER BY bdate DESC
+	</select>
+	
+	<select id="findByBnum" resultType="com.goldendust.mybatis.dto.BoardDto">
+		SELECT * FROM springboard WHERE bnum=#{param1}
+	</select>
+	
+	<select id="isPostAvailable" resultType="int">
+		SELECT COUNT(*) FROM springboard WHERE bnum=#{param1}
+	</select>
+	
+	<delete id="delete">
+		DELETE FROM springboard WHERE bnum=#{param1}
+	</delete>
+	
+	<update id="modifyPost">
+		UPDATE springboard SET btitle=#{param2}, bcontent=#{param3} WHERE bnum=#{param1}
+	</update>
+	
+	<update id="incrementCount">
+		UPDATE springboard SET bhit = bhit+1 WHERE bnum=#{param1}
+	</update>
+
+</mapper>

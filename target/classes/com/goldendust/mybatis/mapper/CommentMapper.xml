@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.goldendust.mybatis.dao.CommentDao">
+
+	<insert id="insertComment">
+		INSERT INTO comments (bnum, mid, ctext) VALUES (#{param1}, #{param2}, #{param3})
+	</insert>
+	
+	<select id="getComments" resultType="com.goldendust.mybatis.dto.CommentDto">
+		SELECT * FROM comments WHERE bnum=#{param1}
+	</select>
+	
+</mapper>
