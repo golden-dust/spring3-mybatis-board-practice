@@ -17,6 +17,7 @@
 		font-size: 8pt;
 	}
 </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </head>
 <body>
 	<h2>게시글</h2>
@@ -69,16 +70,63 @@
 			<tr>
 				<table cellpadding="3">
 					<tr>
-						<td colspan="2">${comment.ctext}</td>
-						
+						<td colspan="3">${comment.ctext}</td>
 					</tr>
 					<tr>
-						<td><span class="medium">${comment.mid}</span></td>
-						<td><span class="small">${comment.cdate}</span></td>
+						<td>
+							<span class="medium">${comment.mid}</span>
+						</td>
+						<td>
+							<span class="small">${comment.cdate}</span>
+						</td>
+						<td>
+						<div>
+							<%
+								String sid = (String) session.getAttribute("sid");
+							%>
+							<c:if test="${comment.mid eq sid}">
+							<form>
+								<input type="hidden" name="bnum" value="${post.bnum}">
+								<input type="hidden" name="cid" value="${comment.cid}">
+								<button class="commentButtons" type="button" name="modifyBtn" id="${comment.cid}">수정</button>  
+								<button class="commentButtons" type="submit" formaction="commentDeleteOk">삭제</button>
+							</form>
+							</c:if>
+							<div>
+								<table class="modifyForm" style="display: none;">
+								<tr>
+									<td>
+										<form action="commentUpdateOk">
+											<input type="hidden" name="bnum" value="${post.bnum}">
+											<input type="hidden" name="cid" value="${comment.cid}">
+											<textarea name="ctext">${comment.ctext}</textarea>
+											<button type="submit">수정</button> 
+											<button type="button" name="cancelBtn" class="cancelBtn">취소</button>
+										</form>
+									</td>
+								</tr>	
+								</table>	
+							</div>
+						</div>
+						</td>
 					</tr>
+					
 				</table>
 			</tr>
 		</c:forEach>
 	</table>
+	<script type="text/javascript">
+		$('document').ready ( function() {
+			$('.modifyBtn').click(function() {
+				$(this).children('table.modifyForm').show();
+				}
+			});
+			
+			$('.cancelBtn').click(function() {
+				$('.modifyForm').hide();
+			});
+		} );
+		
+	</script>
 </body>
 </html>

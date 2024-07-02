@@ -8,5 +8,7 @@ public interface CommentDao {
 	
 	public void insertComment(String bnum, String mid, String ctext);
 	public ArrayList<CommentDto> getComments(String bnum);
+	public void deleteComment(String cid);
+	public void updateComment(String cid, String ctext);
 
 }

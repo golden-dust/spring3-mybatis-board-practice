@@ -2,7 +2,9 @@ package com.goldendust.mybatis.controller;
 
 import java.util.ArrayList;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.ibatis.session.SqlSession;
@@ -68,8 +70,41 @@ public class BoardController {
 		return "redirect:boardlist";
 	}
 	
+	/**
+	 * 조회수 중복 방지
+	 */
+	private void viewCountUp(String bnum, HttpServletRequest request, HttpServletResponse response) {
+		Cookie oldCookie = null;
+		Cookie[] cookies = request.getCookies();
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				if (cookie.getName().equals("postView")) {
+					oldCookie = cookie;
+				}
+			}
+		}
+		
+		if (oldCookie != null) {
+			if (!oldCookie.getValue().contains("[" + bnum + "]")) {
+				BoardDao bDao = sqlSession.getMapper(BoardDao.class);
+				bDao.incrementCount(bnum);
+				oldCookie.setValue(oldCookie.getValue() + "_[" + bnum + "]");
+				oldCookie.setPath("/");
+				oldCookie.setMaxAge(60 * 60 * 24);
+				response.addCookie(oldCookie);
+			}
+		} else {
+			BoardDao bDao = sqlSession.getMapper(BoardDao.class);
+			bDao.incrementCount(bnum);
+			Cookie newCookie = new Cookie("postView", "[" + bnum + "]");
+			newCookie.setPath("/");
+			newCookie.setMaxAge(60 * 60 * 24);
+			response.addCookie(newCookie);
+		}
+	}
+	
 	@RequestMapping(value="/post")
-	public String toPost(HttpServletRequest request, Model model) {
+	public String toPost(HttpServletRequest request, Model model, HttpServletResponse response) {
 		
 		// 세션 아이디 가져오기
 		HttpSession session = request.getSession();
@@ -85,7 +120,7 @@ public class BoardController {
 			// 게시물 번호에 해당하는 게시글 있는지 확인
 			if (bDao.isPostAvailable(bnum) == 1) {  // 일치 게시글 있으면
 				// 조회수 증가
-				bDao.incrementCount(bnum);
+				viewCountUp(bnum, request, response);
 				
 				// 게시글 불러와 모델에 저장
 				BoardDto post = bDao.findByBnum(bnum);
@@ -195,6 +230,40 @@ public class BoardController {
 		
 		model.addAttribute("bnum", bnum);
 		model.addAttribute("comments", comments);
+		
+		return "redirect:post";
+	}
+	
+	@RequestMapping(value="/commentDeleteOk")
+	public String commentDeleteOk(HttpServletRequest request, Model model) {
+
+		HttpSession session = request.getSession();
+		String sid = (String) session.getAttribute("sid");
+		if (sid == null) {
+			return "redirect:login";
+		}
+		
+		CommentDao cDao = sqlSession.getMapper(CommentDao.class);
+		cDao.deleteComment(request.getParameter("cid"));
+		model.addAttribute("bnum", request.getParameter("bnum"));
+		
+		return "redirect:post";
+		
+	}
+	
+	@RequestMapping(value="/commentUpdateOk")
+	public String commentUpdateOk(HttpServletRequest request, Model model) {
+		
+		HttpSession session = request.getSession();
+		String sid = (String) session.getAttribute("sid");
+		if (sid == null) {
+			return "redirect:login";
+		}
+		
+		CommentDao cDao = sqlSession.getMapper(CommentDao.class);
+		cDao.updateComment(request.getParameter("cid"),
+				request.getParameter("ctext"));
+		model.addAttribute("bnum", request.getParameter("bnum"));
 		
 		return "redirect:post";
 	}
